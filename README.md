@@ -9,4 +9,4 @@ output:
 
 ![alt text](https://github.com/wasawi/weekly_calendar/blob/main/readme_imgs/j.png?raw=true)
 
-![alt text](https://github.com/[username]/[reponame]/blob/main/readme_imgs/j_.png?raw=true)
+![alt text](https://github.com/wasawi/weekly_calendar/blob/main/readme_imgs/j_.png?raw=true)
