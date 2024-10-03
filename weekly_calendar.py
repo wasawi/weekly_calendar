@@ -142,8 +142,5 @@ def generate_calendars_from_file(file_path, num_years, draw_to_date = False):
 
 # Example usage
 #create_weekly_calendar(date(1982, 5, 19), 100)
-generate_calendars_from_file('aniversaris amics.txt', 100)
-generate_calendars_from_file('aniversaris amics.txt', 100, True)
-
-#generate_calendars_from_file('aniversaris familia.txt', 100)
-#generate_calendars_from_file('aniversaris familia.txt', 100, True)
+generate_calendars_from_file('aniversaris.txt', 100)
+generate_calendars_from_file('aniversaris.txt', 100, True)
