@@ -4,7 +4,7 @@ from datetime import date, datetime
 
 # A4 standard international paper size
 DOC_WIDTH = 1684  # 210mm / 8.27 inches
-DOC_HEIGHT = 2384  # 297mm / 11.69 inches
+DOC_HEIGHT = 3384  # 297mm / 11.69 inches
 
 BOX_LINE_WIDTH = 1
 BIRTHDAY_LINE_WIDTH = 2
@@ -31,11 +31,40 @@ def get_birthday_celebration(year, birthday):
             return date(year, 3, 1)  # Use March 1 if it's not a leap year
     return birthday
 
+def get_birthday_iso(year, birthday):
+    """Get the true (iso_year, iso_week) that contains the birthday's occurrence in the given calendar year."""
+    celebrated = get_birthday_celebration(year, birthday)
+    birthday_date = date(year, celebrated.month, celebrated.day)
+    iso_year, iso_week, _ = birthday_date.isocalendar()
+    return iso_year, iso_week
+
 def get_birthday_week(year, birthday):
-    """Get the ISO week number that contains the user's birthday for a given year."""
-    birthday = get_birthday_celebration(year, birthday)
-    birthday_date = date(year, birthday.month, birthday.day)
-    return birthday_date.isocalendar()[1]
+    """Get the week number to use as a row-boundary (start/end) for a given year.
+
+    Early January dates can fall in the previous ISO year's last week, and late
+    December dates can fall in the next ISO year's week 1; clamp those into this
+    row's own valid range so partial-row boundaries stay sane.
+    """
+    iso_year, iso_week = get_birthday_iso(year, birthday)
+    if iso_year < year:
+        return 1
+    elif iso_year > year:
+        return get_iso_weeks(year)
+    return iso_week
+
+def get_bold_weeks(year, birthday):
+    """Get the set of week numbers in this row that should be bolded.
+
+    A birthday's true ISO week can belong to the previous or next calendar
+    year's row (see get_birthday_iso). Bold the box that actually represents
+    that week, wherever it falls, instead of fabricating one in the wrong row.
+    """
+    bold_weeks = set()
+    for candidate_year in (year - 1, year, year + 1):
+        iso_year, iso_week = get_birthday_iso(candidate_year, birthday)
+        if iso_year == year:
+            bold_weeks.add(iso_week)
+    return bold_weeks
 
 def calculate_fade_color(year_index, fade_start_year, total_years):
     """Calculate the fade color based on the year index, where year 80 starts fading."""
@@ -60,7 +89,7 @@ def draw_year_row(ctx, year, pos_x, pos_y, birthday, start_week=None, end_week=N
     current_week = current_date.isocalendar()[1]
 
     weeks = get_iso_weeks(year)
-    birthday_week = get_birthday_week(year, birthday)
+    bold_weeks = get_bold_weeks(year, birthday)
 
     if start_week is None:
         start_week = 1
@@ -79,7 +108,7 @@ def draw_year_row(ctx, year, pos_x, pos_y, birthday, start_week=None, end_week=N
         else:
             stroke_color = fillcolour  # Use fading color for future weeks
 
-        if week + 1 == birthday_week:
+        if week + 1 in bold_weeks:
             draw_square(ctx, box_pos_x, pos_y, BOX_SIZE, stroke_color, line_width=BIRTHDAY_LINE_WIDTH)
         else:
             draw_square(ctx, box_pos_x, pos_y, BOX_SIZE, stroke_color, line_width=BOX_LINE_WIDTH)
@@ -142,5 +171,5 @@ def generate_calendars_from_file(file_path, num_years, draw_to_date = False):
 
 # Example usage
 #create_weekly_calendar(date(1982, 5, 19), 100)
-generate_calendars_from_file('aniversaris.txt', 100)
-generate_calendars_from_file('aniversaris.txt', 100, True)
+generate_calendars_from_file('aniversaris amics.txt', 100)
+generate_calendars_from_file('aniversaris amics.txt', 100, True)
